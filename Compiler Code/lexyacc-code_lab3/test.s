@@ -1,7 +1,7 @@
 .data
 	vars:	.zero 1024
 
-
+_start:
 	pushq	$732
 	popq	%eax
 	pushq	$2684
