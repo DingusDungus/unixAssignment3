@@ -4,33 +4,46 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct {
+  char reg[10];
+  char variable;
+} reg;
+
 static int lbl;
 static char registers[8][10] = {"eax", "ecx", "edx", "ebx",
                                 "ebp", "esi", "edi", "none"};
-static char var2reg[256][10];
+static reg var2reg[4];
+static bool declared[256];
+
 static int regCount;
 
-void resetRegCount() {
-  regCount++;
-  if (regCount == 7) {
-    regCount = 0;
-  }
-}
+void resetRegCount() { regCount = 0; }
 
-bool checkIfVarAlreadyTaken(int index) {
-  for (int i = 0; i < 8; i++) {
-    if (strcmp(registers[i], var2reg[index]) == 0) {
-      return true;
-    }
+bool isFull() {
+  if (regCount == 4) {
+    return true;
   }
   return false;
 }
 
-void assignVariable(int index) {
-  if (checkIfVarAlreadyTaken(index) == false) {
-    strcpy(var2reg[index], registers[regCount]);
-    resetRegCount();
+void shiftElements() {
+  for (int i = 0; i < 3; i++) {
+    var2reg[i + 1] = var2reg[i];
   }
+}
+
+void assignVariable(char variable, nodeType *p) {
+  if (isFull()) {
+    reg throwOutReg = var2reg[3];
+    shiftElements();
+    printf("movq %(vars), %rbp\n");
+    printf("movq %s, %d(%", throwOutReg.reg, throwOutReg.variable + 8);
+    printf("%s)\n", "rbp");
+    var2reg[0].variable = variable;
+    strcpy(var2reg[0].reg, throwOutReg.reg);
+    if (declared[variable]) {
+      printf("movq %d(%rbp), %" "%s", throwOutReg.variable + 8, var2reg[0].reg);
+    }
 }
 
 int ex(nodeType *p) {
@@ -43,9 +56,9 @@ int ex(nodeType *p) {
     printf("\tpushq\t$%d\n", p->con.value);
     break;
   case typeId:
-    assignVariable(p->id.i + 'a');
+    assignVariable(p->id.i + 'a', p);
     char registerVar[10] = "%";
-    strcat(registerVar, var2reg[p->id.i + 'a']);
+    strcat(registerVar, var2reg[p->id.i + 'a'].reg);
     printf("\tpushq\t%s\n", registerVar);
     break;
   case typeOpr:
