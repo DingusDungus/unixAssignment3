@@ -1,36 +1,38 @@
-.data
-	vars:	.zero 1024
 
+.globl	vars
+	.align 32
+	.type	vars, @object
+	.size	vars, 2048
+vars:
+	.zero	2048
+	.section	.rodata
+.LC0:
+	.text
+	.globl	main
+	.type	main, @function
+    .zero 2048
+    
 main:
 	pushq	$732
-	popq	%eax
+	popq	%rax
 	pushq	$2684
-	popq	%ecx
+	popq	%rcx
 L000:
-	pushq	%eax
-	pushq	%ecx
-	compNE
-	jz	L001
-	pushq	%eax
-	pushq	%ecx
-	compGT
-	jz	L002
-	pushq	%eax
-	pushq	%ecx
-	subq
-	popq	%eax
+	cmpq %rcx, %rax
+	je	L001
+	cmpq %rcx, %rax
+	jl	L002
+	subq	%rcx, %rax
+	pushq	%rax
+	popq	%rax
 	jmp	L003
 L002:
-	pushq	%ecx
-	pushq	%eax
-	subq
-	popq	%ecx
+	subq	%rax, %rcx
+	pushq	%rcx
+	popq	%rcx
 L003:
 	jmp	L000
 L001:
-	pushq	%eax
 	print
-	pushq	%eax
-	pushq	%ecx
 	gcd
 	print
