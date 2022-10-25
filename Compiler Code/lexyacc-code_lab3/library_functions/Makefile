@@ -11,7 +11,9 @@ LIBGCD=gcd
 all: libShared
 
 run:
-	LD_LIBRARY_PATH=$(PWD)/lib ./test
+	export LD_LIBRARY_PATH=$(PWD)/lib
+	./test
+	unset LD_LIBRARY_PATH
 
 objectTest:
 	gcc -Wall -fPIC -c $(SRCDIR)/add_one.s -o $(OBJDIR)/add_one.o
