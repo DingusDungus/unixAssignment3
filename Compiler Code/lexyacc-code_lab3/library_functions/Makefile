@@ -10,6 +10,8 @@ LIBGCD=gcd
 
 all: libShared
 
+libShared: sharedTest sharedFact sharedLntwo sharedGcd
+
 run:
 	export LD_LIBRARY_PATH=$(PWD)/lib
 	./test
@@ -25,22 +27,16 @@ objectGcd:
 	gcc -Wall -fPIC -c $(SRCDIR)/$(LIBGCD).s -o $(OBJDIR)/$(LIBGCD).o
 
 sharedTest: objectTest
-	gcc -shared -Wl,-soname,libtest.so -o $(LIBDIR)/libtest.so $(OBJDIR)/add_one.o
+	gcc -shared -Wl,-soname,lib$(LIBTEST).so -o $(LIBDIR)/lib$(LIBTEST).so $(OBJDIR)/add_one.o
 sharedFact: objectFact
-	gcc -shared -Wl,-soname,libtest.so -o $(LIBDIR)/libtest.so $(OBJDIR)/add_one.o
+	gcc -shared -Wl,-soname,lib$(LIBFACT).so -o $(LIBDIR)/lib$(LIBFACT).so $(OBJDIR)/$(LIBFACT).o
 sharedLntwo: objectLntwo
-	gcc -shared -Wl,-soname,libtest.so -o $(LIBDIR)/libtest.so $(OBJDIR)/add_one.o
+	gcc -shared -Wl,-soname,lib$(LIBLNTWO).so -o $(LIBDIR)/lib$(LIBLNTWO).so $(OBJDIR)/$(LIBLNTWO).o
 sharedGcd: objectGcd
-	gcc -shared -Wl,-soname,libtest.so -o $(LIBDIR)/libtest.so $(OBJDIR)/add_one.o
+	gcc -shared -Wl,-soname,lib$(LIBGCD).so -o $(LIBDIR)/lib$(LIBGCD).so $(OBJDIR)/$(LIBGCD).o
 
-test: sharedTest
+test:
 	gcc -Wall -L./lib -l$(LIBTEST) $(LIBTEST).cpp -lstdc++ -o $(LIBTEST).out
-fact: sharedFact
-	gcc -Wall -L./lib -l$(LIBFACT) $(LIBFACT).cpp -lstdc++ -o $(LIBFACT).out
-lntwo: sharedLntwo
-	gcc -Wall -L./lib -l$(LIBLNTWO) $(LIBLNTWO).cpp -lstdc++ -o $(LIBLNTWO).out
-gcd: sharedGcd
-	gcc -Wall -L./lib -l$(LIBGCD) $(LIBGCD).cpp -lstdc++ -o $(LIBGCD).out
 
 clean:
-	rm -f $(OBJDIR)/*.o $(LIBDIR)/*.so
+	rm -f $(OBJDIR)/*.o $(LIBDIR)/*.so test
