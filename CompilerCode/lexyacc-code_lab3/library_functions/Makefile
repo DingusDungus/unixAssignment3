@@ -12,11 +12,6 @@ all: libShared
 
 libShared: sharedTest sharedFact sharedLntwo sharedGcd
 
-run:
-	export LD_LIBRARY_PATH=$(PWD)/lib
-	./test
-	unset LD_LIBRARY_PATH
-
 objectTest:
 	gcc -Wall -fPIC -c $(SRCDIR)/add_one.s -o $(OBJDIR)/add_one.o
 objectFact:
