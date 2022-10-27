@@ -7,7 +7,7 @@ LIBFACT=fact
 LIBLNTWO=lntwo
 LIBGCD=gcd
 
-LIBS=-l$(LIBTEST) -l$(LIBFACT) -l$(LIBLNTWO)
+LIBS=-l$(LIBTEST) -l$(LIBFACT) -l$(LIBLNTWO) -l$(LIBGCD)
 
 all: libShared
 

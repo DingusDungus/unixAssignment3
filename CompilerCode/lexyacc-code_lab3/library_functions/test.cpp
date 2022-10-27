@@ -14,14 +14,22 @@ int main(int argc, char **argv) {
               << std::endl;
   }
 
-  std::cout << std::endl << "test fact_func (should be 120):" << std::endl;
+  std::cout << std::endl << "test fact_func(5) 'should be 120':" << std::endl;
   std::cout << "result: " << fact_func(5) << std::endl;
 
-  std::cout << std::endl << "test lntwo_func (should be 5):" << std::endl;
+  std::cout << std::endl << "test lntwo_func(32) 'should be 5':" << std::endl;
   std::cout << "result: " << lntwo_func(32) << std::endl;
-  std::cout << "test lntwo_func (should be 0):" << std::endl;
+  std::cout << "test lntwo_func(1) 'should be 0':" << std::endl;
   std::cout << "result: " << lntwo_func(1) << std::endl;
-  std::cout << "test lntwo_func (should be 0):" << std::endl;
+  std::cout << "test lntwo_func(0) 'should be 0':" << std::endl;
   std::cout << "result: " << lntwo_func(0) << std::endl;
+
+  std::cout << std::endl
+            << "test gcd_func(81, 153) 'should be 9':" << std::endl;
+  std::cout << "result: " << gcd_func(81, 153) << std::endl;
+  std::cout << "test gcd_func(18, 24) 'should be 6':" << std::endl;
+  std::cout << "result: " << gcd_func(18, 24) << std::endl;
+  std::cout << "test gcd_func(7, 9) 'should be 1':" << std::endl;
+  std::cout << "result: " << gcd_func(7, 9) << std::endl;
   return 0;
 }
