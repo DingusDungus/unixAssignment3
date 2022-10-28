@@ -7,9 +7,12 @@ LIBFACT=fact
 LIBLNTWO=lntwo
 LIBGCD=gcd
 
-LIBS=-l$(LIBTEST) -l$(LIBFACT)
+LIBS=-l$(LIBTEST) -l$(LIBFACT) -l$(LIBLNTWO) -l$(LIBGCD)
 
 all: libShared
+
+test:
+	gcc -Wall -L./lib $(LIBS) $(LIBTEST).cpp -lstdc++ -o $(LIBTEST).out
 
 libShared: sharedTest sharedFact sharedLntwo sharedGcd
 
@@ -31,8 +34,5 @@ sharedLntwo: objectLntwo
 sharedGcd: objectGcd
 	gcc -shared -Wl,-soname,lib$(LIBGCD).so -o $(LIBDIR)/lib$(LIBGCD).so $(OBJDIR)/$(LIBGCD).o
 
-test:
-	gcc -Wall -L./lib $(LIBS) $(LIBTEST).cpp -lstdc++ -o $(LIBTEST).out
-
 clean:
-	rm -f $(OBJDIR)/*.o $(LIBDIR)/*.so test
+	rm -f $(OBJDIR)/*.o $(LIBDIR)/*.so
