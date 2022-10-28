@@ -1,5 +1,8 @@
-a=732;
-b=2684;
-
-print fact a;
-print a;
+n=1000000;
+s=100000000;
+a=0;
+while(n > 0) {
+  a=a+s/n;
+  n=n-1;
+}
+print a/(s/1000);

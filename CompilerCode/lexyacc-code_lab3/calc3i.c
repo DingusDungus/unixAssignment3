@@ -14,6 +14,8 @@ static int varLbl;
 static char registers[8][10] = {"r12", "r13", "r14", "r15",
                                 "rbx", "rsi", "rdi", "rax"};
 static reg var2reg[4];
+static reg loopRegs[4];
+static int loopsRegsSize;
 static bool declared[256];
 static bool full = false;
 static const char PREFIX = 37; // asci for %
@@ -31,12 +33,6 @@ bool isFull() {
   return false;
 }
 
-void shiftElements() {
-  for (int i = 2; i >= 0; i--) {
-    var2reg[i + 1].variable = var2reg[i].variable;
-  }
-}
-
 void printArray() {
   for (int i = 0; i < 4; i++) {
     printf("Variable: %c, index: %d\n", var2reg[i].variable, i);
@@ -52,20 +48,43 @@ int isInArray(char variable) {
   return -1;
 }
 
-void restoreAndStore(char variable) {
-  varLbl++;
+void storeLoopRegs() {
+  if (full) {
+    for (int i = 0; i < 4; i++) {
+      strcpy(loopRegs[i].reg, var2reg[i].reg);
+      loopRegs[i].variable = var2reg[i].variable;
+    }
+    loopsRegsSize = 4;
+  } else {
+    for (int i = 0; i < regCount; i++) {
+      strcpy(loopRegs[i].reg, var2reg[i].reg);
+      loopRegs[i].variable = var2reg[i].variable;
+    }
+    loopsRegsSize = regCount;
+  }
+}
+
+void restoreAndStoreLoop(int i) {
   // Store throwout variable
-  varLbl++;
-  printf("VL%03d:\n", varLbl);
-  varLbl++;
-  printf("\tmovq\tisInReg+%d(%crip), %crax\n", variable * 8, PREFIX, PREFIX);
-  printf("\tcmpq\t$1, %crax\n", PREFIX);
-  printf("\tje\tVL%03d\n", varLbl);
-  printf("\tmovq\t$1, %crax\n", PREFIX);
-  printf("\tmovq\t%crax, isInReg+%d(%crip)\n", PREFIX, variable * 8, PREFIX);
-  printf("\tmovq\t$0, %crax\n", PREFIX);
-  printf("\tmovq\t%crax, isInReg+%d(%crip)\n", PREFIX,
-         var2reg[regCount].variable * 8, PREFIX);
+  printf("\tmovq\t%c%s, vars+%d(%crip)\n", PREFIX, var2reg[i].reg,
+         var2reg[i].variable * 8, PREFIX);
+  declared[var2reg[i].variable] = true;
+  var2reg[i].variable = loopRegs[i].variable;
+  // Restore variable from asm array
+  if (declared[loopRegs[i].variable]) {
+    printf("\tmovq\tvars+%d(%crip), %c%s\n", loopRegs[i].variable * 8, PREFIX,
+           PREFIX, var2reg[i].reg);
+  }
+}
+
+void restoreLoopRegs() {
+  for (int i = 0; i < loopsRegsSize; i++) {
+    restoreAndStoreLoop(i);
+  }
+}
+
+void restoreAndStore(char variable) {
+  // Store throwout variable
   printf("\tmovq\t%c%s, vars+%d(%crip)\n", PREFIX, var2reg[regCount].reg,
          var2reg[regCount].variable * 8, PREFIX);
   declared[var2reg[regCount].variable] = true;
@@ -75,7 +94,6 @@ void restoreAndStore(char variable) {
     printf("\tmovq\tvars+%d(%crip), %c%s\n", variable * 8, PREFIX, PREFIX,
            var2reg[regCount].reg);
   }
-  printf("VL%03d:\n", varLbl);
 }
 
 int assignVariable(char variable) {
@@ -100,9 +118,33 @@ int assignVariable(char variable) {
   return (regCount - 1);
 }
 
+void operation(char *command) {
+  printf("\tpopq\t%crsi\n", PREFIX);
+  printf("\tpopq\t%crdi\n", PREFIX);
+  printf("\t%s\t%crsi, %crdi\n", command, PREFIX, PREFIX);
+  printf("\tpushq\t%crdi\n", PREFIX);
+}
+
+void arithmeticOperation(char *command) {
+  printf("\tpopq\t%crsi\n", PREFIX);
+  printf("\tpopq\t%crdi\n", PREFIX);
+  printf("\tcmpq\t%crsi, %crdi\n", PREFIX, PREFIX);
+  printf("\t%s", command);
+}
+
+void divOperation() {
+  printf("\tmovq\t$0, %crdx\n", PREFIX);
+  printf("\tpopq\t%crsi\n", PREFIX);
+  printf("\tpopq\t%crax\n", PREFIX);
+  printf("\tdivq\t%crsi\n", PREFIX);
+  printf("\tpushq\t%crax\n", PREFIX);
+}
+
 int ex(nodeType *p) {
   int lbl1 = 0, lbl2 = 0;
   int index, operator1, operator2;
+  bool isImmediate1 = false;
+  bool isImmediate2 = false;
   if (!p)
     return 0;
   switch (p->type) {
@@ -111,17 +153,21 @@ int ex(nodeType *p) {
     break;
   case typeId:
     operator1 = assignVariable(p->id.i + 'a');
-    printf("\tpushq\t%c%s\n", PREFIX, var2reg[operator1].reg);
+    printf("\tmovq\t%c%s, %crbx\n", PREFIX, var2reg[operator1].reg, PREFIX);
+    printf("\tpushq\t%crbx\n", PREFIX);
     break;
   case typeOpr:
     switch (p->opr.oper) {
     case WHILE:
+      storeLoopRegs();
       printf("L%03d:\n", lbl1 = lbl++);
       ex(p->opr.op[0]);
       printf("\tL%03d\n", lbl2 = lbl++);
       ex(p->opr.op[1]);
+      restoreLoopRegs();
       printf("\tjmp\tL%03d\n", lbl1);
       printf("L%03d:\n", lbl2);
+
       break;
     case IF:
       ex(p->opr.op[0]);
@@ -142,98 +188,76 @@ int ex(nodeType *p) {
       break;
     case PRINT:
       ex(p->opr.op[0]);
-      operator1 = assignVariable(p->opr.op[0]->id.i + 'a');
       // printf("\tmovq	%c%s, -8(%crbp)\n", PREFIX, var2reg[operator1].reg,
       // PREFIX);
 
       printf("\tmovl\t$formatString, %cedi\n", PREFIX);
-      if (p->opr.op[0]->type != typeOpr) {
-        printf("\tmovq\t%c%s, %crsi\n", PREFIX, var2reg[operator1].reg, PREFIX);
-      }
-      else 
-      {
-        printf("\tmovq\t%crax, %crsi\n", PREFIX, PREFIX);
-      }
+      printf("\tpopq\t%crsi\n", PREFIX);
       printf("\txor\t%crax, %crax\n", PREFIX, PREFIX);
       printf("\tcall\tprintf\n");
       break;
     case '=':
       ex(p->opr.op[1]);
-      index = assignVariable(p->opr.op[0]->id.i + 'a');
-      printf("\tpopq\t%c%s\n", PREFIX, var2reg[index].reg);
+      operator1 = assignVariable(p->opr.op[0]->id.i + 'a');
+      printf("\tpopq\t%c%s\n", PREFIX, var2reg[operator1].reg);
       break;
     case UMINUS:
       ex(p->opr.op[0]);
-      printf("\tneg\n");
+      printf("\tpopq\t%crdi\n", PREFIX);
+      printf("\tneg\t%crdi\n", PREFIX);
+      printf("\tpushq\t%crdi\n", PREFIX);
       break;
     case FACT:
       ex(p->opr.op[0]);
+      printf("\tpopq\t%crdi\n", PREFIX);
       printf("\tcall fact_func\n");
+      printf("\tpushq\t%crax\n", PREFIX);
       break;
     case LNTWO:
       ex(p->opr.op[0]);
-      printf("\lntwo\n");
+      printf("\tpopq\t%crdi\n", PREFIX);
+      printf("\tcall lntwo_func\n");
+      printf("\tpushq\t%crax\n", PREFIX);
       break;
     default:
-      /*
       ex(p->opr.op[0]);
       ex(p->opr.op[1]);
-      */
-      operator1 = assignVariable(p->opr.op[0]->id.i + 'a');
-      operator2 = assignVariable(p->opr.op[1]->id.i + 'a');
       switch (p->opr.oper) {
       case GCD:
-        printf("\tgcd\n");
+        printf("\tpopq\t%crsi\n", PREFIX);
+        printf("\tpopq\t%crdi\n", PREFIX);
+        printf("\tcall gcd_func\n");
+        printf("\tpushq\t%crax\n", PREFIX);
         break;
       case '+':
-        printf("\taddq %c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tpushq\t%c%s\n", PREFIX, var2reg[operator1].reg);
+        operation("addq");
         break;
       case '-':
-        printf("\tsubq\t%c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tpushq\t%c%s\n", PREFIX, var2reg[operator1].reg);
-        break;
-      case '*':
-        printf("\timulq\t%c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tpushq\t%c%s\n", PREFIX, var2reg[operator1].reg);
+        operation("subq");
         break;
       case '/':
-        printf("\tidivq\t%c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tpushq\t%c%s\n", PREFIX, var2reg[operator1].reg);
+        divOperation();
+        break;
+      case '*':
+        operation("imulq");
         break;
       case '<':
-        printf("\tcmpq\t%c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("jg");
+        arithmeticOperation("jge");
         break;
       case '>':
-        printf("\tcmpq %c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tjl");
+        arithmeticOperation("jle");
         break;
       case GE:
-        printf("\tcmpq %c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tjle");
+        arithmeticOperation("jl");
         break;
       case LE:
-        printf("\tcmpq %c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tjge");
+        arithmeticOperation("jg");
         break;
       case NE:
-        printf("\tcmpq %c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tje");
+        arithmeticOperation("je");
         break;
       case EQ:
-        printf("\tcmpq %c%s, %c%s\n", PREFIX, var2reg[operator2].reg, PREFIX,
-               var2reg[operator1].reg);
-        printf("\tjne");
+        arithmeticOperation("jne");
         break;
       }
     }
