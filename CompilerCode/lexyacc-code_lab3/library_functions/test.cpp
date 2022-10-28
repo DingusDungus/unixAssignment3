@@ -16,6 +16,13 @@ int main(int argc, char **argv) {
 
   std::cout << std::endl << "test fact_func(5) 'should be 120':" << std::endl;
   std::cout << "result: " << fact_func(5) << std::endl;
+  std::cout << std::endl << "test fact_func(7) 'should be 5040':" << std::endl;
+  std::cout << "result: " << fact_func(7) << std::endl;
+  std::cout << std::endl << "test fact_func(8) 'should be 40320':" << std::endl;
+  std::cout << "result: " << fact_func(8) << std::endl;
+  std::cout << std::endl
+            << "test fact_func(9) 'should be 362880':" << std::endl;
+  std::cout << "result: " << fact_func(9) << std::endl;
 
   std::cout << std::endl << "test lntwo_func(32) 'should be 5':" << std::endl;
   std::cout << "result: " << lntwo_func(32) << std::endl;
