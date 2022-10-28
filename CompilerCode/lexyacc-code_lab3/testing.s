@@ -4,12 +4,12 @@
 	.bss
 	.align 32
 	.type	array, @object
-	.size	array, 2048
+	.size	array, 1024
 array:
-	.zero	2048
+	.zero	1024
 	.section	.rodata
 .LC0:
-	.string	"A is :%d"
+	.string	"%d\n"
 	.text
 	.globl	main
 	.type	main, @function
@@ -22,11 +22,10 @@ main:
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
 	subq	$16, %rsp
-	movq	$1, array+8(%rip)
-	movq	array+8(%rip), %rax
-	movq	%rax, -8(%rbp)
-	movq	-8(%rbp), %rax
-	movq	%rax, %rsi
+	movl	array+188(%rip), %eax
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %eax
+	movl	%eax, %esi
 	movl	$.LC0, %edi
 	movl	$0, %eax
 	call	printf

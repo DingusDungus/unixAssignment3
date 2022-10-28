@@ -7,17 +7,24 @@ fileProperties=$(echo $file | tr "." "\n")
 ./calc3i.exe < $file > $fileProperties.s
 
 echo -e "
-.globl	vars
-	.align 32
-	.type	vars, @object
-	.size	vars, 2048
+.data
+formatString:
+	.string	\"Number :%d \"
 vars:
 	.zero	2048
-	.section	.rodata
-.LC0:
-	.text
-	.globl	main
-	.type	main, @function
-    .zero 2048
+isInReg:
+	.zero	2048
+
+.text
+.global	main		
     
-main:" | cat - $fileProperties.s > temp && mv temp $fileProperties.s
+main:
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subq	\$16, %rsp" | cat - $fileProperties.s > temp && mv temp $fileProperties.s
+
+echo -e "	leave
+	ret\n" >> $fileProperties.s
+
+gcc -c $fileProperties.s 
+gcc $fileProperties.o ./library_functions/lib/*.a -o $fileProperties.exec 

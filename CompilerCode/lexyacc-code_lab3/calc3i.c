@@ -10,8 +10,9 @@ typedef struct {
 } reg;
 
 static int lbl;
-static char registers[8][10] = {"rax", "rcx", "rdx", "rbx",
-                                "rbp", "rsi", "rdi", "none"};
+static int varLbl;
+static char registers[8][10] = {"r12", "r13", "r14", "r15",
+                                "rbx", "rsi", "rdi", "rax"};
 static reg var2reg[4];
 static bool declared[256];
 static bool full = false;
@@ -52,16 +53,29 @@ int isInArray(char variable) {
 }
 
 void restoreAndStore(char variable) {
+  varLbl++;
   // Store throwout variable
+  varLbl++;
+  printf("VL%03d:\n", varLbl);
+  varLbl++;
+  printf("\tmovq\tisInReg+%d(%crip), %crax\n", variable * 8, PREFIX, PREFIX);
+  printf("\tcmpq\t$1, %crax\n", PREFIX);
+  printf("\tje\tVL%03d\n", varLbl);
+  printf("\tmovq\t$1, %crax\n", PREFIX);
+  printf("\tmovq\t%crax, isInReg+%d(%crip)\n", PREFIX, variable * 8, PREFIX);
+  printf("\tmovq\t$0, %crax\n", PREFIX);
+  printf("\tmovq\t%crax, isInReg+%d(%crip)\n", PREFIX,
+         var2reg[regCount].variable * 8, PREFIX);
   printf("\tmovq\t%c%s, vars+%d(%crip)\n", PREFIX, var2reg[regCount].reg,
-         (variable * 8), PREFIX);
+         var2reg[regCount].variable * 8, PREFIX);
   declared[var2reg[regCount].variable] = true;
   var2reg[regCount].variable = variable;
   // Restore variable from asm array
   if (declared[variable]) {
-    printf("\tmovq\tvars+%d(%crip), %c%s\n", variable + 8, PREFIX, PREFIX,
+    printf("\tmovq\tvars+%d(%crip), %c%s\n", variable * 8, PREFIX, PREFIX,
            var2reg[regCount].reg);
   }
+  printf("VL%03d:\n", varLbl);
 }
 
 int assignVariable(char variable) {
@@ -82,6 +96,7 @@ int assignVariable(char variable) {
     strcpy(var2reg[regCount].reg, registers[regCount]);
     regCount++;
   }
+  // printf("regcount: %d\n", regCount);
   return (regCount - 1);
 }
 
@@ -95,7 +110,8 @@ int ex(nodeType *p) {
     printf("\tpushq\t$%d\n", p->con.value);
     break;
   case typeId:
-    assignVariable(p->id.i + 'a');
+    operator1 = assignVariable(p->id.i + 'a');
+    printf("\tpushq\t%c%s\n", PREFIX, var2reg[operator1].reg);
     break;
   case typeOpr:
     switch (p->opr.oper) {
@@ -126,7 +142,20 @@ int ex(nodeType *p) {
       break;
     case PRINT:
       ex(p->opr.op[0]);
-      printf("\tprint\n");
+      operator1 = assignVariable(p->opr.op[0]->id.i + 'a');
+      // printf("\tmovq	%c%s, -8(%crbp)\n", PREFIX, var2reg[operator1].reg,
+      // PREFIX);
+
+      printf("\tmovl\t$formatString, %cedi\n", PREFIX);
+      if (p->opr.op[0]->type != typeOpr) {
+        printf("\tmovq\t%c%s, %crsi\n", PREFIX, var2reg[operator1].reg, PREFIX);
+      }
+      else 
+      {
+        printf("\tmovq\t%crax, %crsi\n", PREFIX, PREFIX);
+      }
+      printf("\txor\t%crax, %crax\n", PREFIX, PREFIX);
+      printf("\tcall\tprintf\n");
       break;
     case '=':
       ex(p->opr.op[1]);
@@ -139,7 +168,7 @@ int ex(nodeType *p) {
       break;
     case FACT:
       ex(p->opr.op[0]);
-      printf("\tfact\n");
+      printf("\tcall fact_func\n");
       break;
     case LNTWO:
       ex(p->opr.op[0]);
