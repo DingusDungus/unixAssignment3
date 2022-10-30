@@ -8,7 +8,7 @@ filename=$(basename $1 .calc)
 echo "
 .data
 formatString:
-	.string	\"Number :%d\n \"
+	.string	\"Number :%d\n\"
 vars:
 	.zero	2048
 isInReg:

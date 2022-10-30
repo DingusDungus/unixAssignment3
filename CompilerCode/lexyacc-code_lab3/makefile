@@ -32,4 +32,4 @@ lib: objectFact objectLntwo objectGcd
 test:
 	gcc -Wall -L./lib $(LIBS) $(LIBTEST).cpp -lstdc++ -o $(LIBTEST).out
 clean:
-	rm *.exe *.o ./library_functions/object/*.o ./library_functions/lib/* *.exec *.s 
+	rm *.exe *.o ./library_functions/object/*.o ./library_functions/lib/* *.s 
