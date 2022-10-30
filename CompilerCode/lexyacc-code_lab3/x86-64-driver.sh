@@ -27,4 +27,4 @@ echo -e "	leave
 	ret\n" >> $fileProperties.s
 
 gcc -c $fileProperties.s 
-gcc $fileProperties.o ./library_functions/lib/*.a -o $fileProperties.exec 
+gcc $fileProperties.o ./library_functions/lib/calc_lib.a -o $fileProperties.exec 
