@@ -1,10 +1,9 @@
 #!/bin/sh
 
-file=$1
+filepath=$1
+filename=$(basename $1 .calc)
 
-fileProperties=$(echo $file | tr "." "\n")
-
-./calc3i.exe < $file > $fileProperties.s
+./calc3i.exe < $filepath > $filename.s
 
 echo "
 .data
@@ -21,10 +20,10 @@ isInReg:
 main:
 	pushq	%rbp
 	movq	%rsp, %rbp
-	subq	\$16, %rsp" | cat - $fileProperties.s > temp && mv temp $fileProperties.s
+	subq	\$16, %rsp" | cat - $filename.s > temp && mv temp $filename.s
 
 echo -e "	leave
-	ret\n" >> $fileProperties.s
+	ret\n" >> $filename.s
 
-gcc -c $fileProperties.s 
-gcc $fileProperties.o ./library_functions/lib/calc_lib.a -o $fileProperties.exec 
+gcc -c $filename.s 
+gcc $filename.o ./library_functions/lib/calc_lib.a -o $filename
