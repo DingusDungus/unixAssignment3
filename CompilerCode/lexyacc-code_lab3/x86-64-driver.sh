@@ -6,10 +6,10 @@ fileProperties=$(echo $file | tr "." "\n")
 
 ./calc3i.exe < $file > $fileProperties.s
 
-echo -e "
+echo "
 .data
 formatString:
-	.string	\"Number :%d \"
+	.string	\"Number :%d\n \"
 vars:
 	.zero	2048
 isInReg:

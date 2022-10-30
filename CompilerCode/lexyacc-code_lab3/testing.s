@@ -21,10 +21,46 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	subq	$16, %rsp
-	movl	array+188(%rip), %eax
-	movl	%eax, -4(%rbp)
+	subq	$32, %rsp
+	movl	$1000001, -4(%rbp)
+	movl	$100000000, -20(%rbp)
+	movl	$0, -8(%rbp)
+	movl	$0, -12(%rbp)
+	movl	$0, -16(%rbp)
+	jmp	.L2
+.L5:
+	cmpl	$0, -16(%rbp)
+	jne	.L3
 	movl	-4(%rbp), %eax
+	movl	%eax, -12(%rbp)
+	movl	$1, -16(%rbp)
+	jmp	.L4
+.L3:
+	movl	-4(%rbp), %eax
+	negl	%eax
+	movl	%eax, -12(%rbp)
+	movl	$0, -16(%rbp)
+.L4:
+	movl	-20(%rbp), %eax
+	cltd
+	idivl	-12(%rbp)
+	addl	%eax, -8(%rbp)
+	subl	$2, -4(%rbp)
+.L2:
+	cmpl	$0, -4(%rbp)
+	jg	.L5
+	movl	-20(%rbp), %eax
+	movslq	%eax, %rdx
+	imulq	$351843721, %rdx, %rdx
+	shrq	$32, %rdx
+	sarl	$13, %edx
+	sarl	$31, %eax
+	movl	%edx, %ecx
+	subl	%eax, %ecx
+	movl	-8(%rbp), %eax
+	cltd
+	idivl	%ecx
+	sall	$2, %eax
 	movl	%eax, %esi
 	movl	$.LC0, %edi
 	movl	$0, %eax

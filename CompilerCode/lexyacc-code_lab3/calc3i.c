@@ -11,21 +11,24 @@ typedef struct {
 
 static int lbl;
 static int varLbl;
-static char registers[8][10] = {"r12", "r13", "r14", "r15",
+static char registers[16][10] = {"r12", "r13", "r14", "r15","rcx",
                                 "rbx", "rsi", "rdi", "rax"};
 static reg var2reg[4];
+static reg loopReg;
 static reg loopRegs[4];
-static int loopsRegsSize;
+static reg ifRegs[4];
 static bool declared[256];
 static bool full = false;
 static const char PREFIX = 37; // asci for %
+
+int const WORK_REGS_NR = 5;
 
 static int regCount;
 
 void resetRegCount() { regCount = 0; }
 
 bool isFull() {
-  if (regCount >= 4) {
+  if (regCount >= WORK_REGS_NR) {
     regCount = 0;
     return true;
   }
@@ -34,13 +37,13 @@ bool isFull() {
 }
 
 void printArray() {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < WORK_REGS_NR; i++) {
     printf("Variable: %c, index: %d\n", var2reg[i].variable, i);
   }
 }
 
 int isInArray(char variable) {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < WORK_REGS_NR; i++) {
     if (var2reg[i].variable == variable) {
       return i;
     }
@@ -48,45 +51,41 @@ int isInArray(char variable) {
   return -1;
 }
 
-void storeLoopRegs() {
-  if (full) {
-    for (int i = 0; i < 4; i++) {
-      strcpy(loopRegs[i].reg, var2reg[i].reg);
-      loopRegs[i].variable = var2reg[i].variable;
+void storeDynamicRegs(reg *regs) {
+  for (int i = 0; i < WORK_REGS_NR; i++) {
+    if (var2reg[i].variable < 61 && var2reg[i].variable > 122) {
+      break;
+      ;
     }
-    loopsRegsSize = 4;
-  } else {
-    for (int i = 0; i < regCount; i++) {
-      strcpy(loopRegs[i].reg, var2reg[i].reg);
-      loopRegs[i].variable = var2reg[i].variable;
-    }
-    loopsRegsSize = regCount;
+    strcpy(loopRegs[i].reg, var2reg[i].reg);
+    regs[i].variable = var2reg[i].variable;
   }
 }
 
-void restoreAndStoreLoop(int i) {
+void restoreAndStoreDynamic(int i, reg * regs) {
   // Store throwout variable
-  printf("\tmovq\t%c%s, vars+%d(%crip)\n", PREFIX, var2reg[i].reg,
-         var2reg[i].variable * 8, PREFIX);
   declared[var2reg[i].variable] = true;
-  var2reg[i].variable = loopRegs[i].variable;
+  var2reg[i].variable = regs[i].variable;
   // Restore variable from asm array
-  if (declared[loopRegs[i].variable]) {
-    printf("\tmovq\tvars+%d(%crip), %c%s\n", loopRegs[i].variable * 8, PREFIX,
+  if (declared[regs[i].variable]) {
+    printf("\tmovq\tvars+%d(%crip), %c%s\n", regs[i].variable * 8, PREFIX,
            PREFIX, var2reg[i].reg);
   }
 }
 
-void restoreLoopRegs() {
-  for (int i = 0; i < loopsRegsSize; i++) {
-    restoreAndStoreLoop(i);
+void restoreDynamicRegs(reg * regs) {
+  for (int i = 0; i < WORK_REGS_NR; i++) {
+    if (var2reg[i].variable < 61 || var2reg[i].variable > 122) {
+      break;
+      ;
+    }
+    restoreAndStoreDynamic(i, regs);
   }
 }
 
 void restoreAndStore(char variable) {
   // Store throwout variable
-  printf("\tmovq\t%c%s, vars+%d(%crip)\n", PREFIX, var2reg[regCount].reg,
-         var2reg[regCount].variable * 8, PREFIX);
+  // printf("Change from %c to %c\n", var2reg[regCount].variable, variable);
   declared[var2reg[regCount].variable] = true;
   var2reg[regCount].variable = variable;
   // Restore variable from asm array
@@ -97,7 +96,7 @@ void restoreAndStore(char variable) {
 }
 
 int assignVariable(char variable) {
-  if (regCount == 4) {
+  if (regCount == WORK_REGS_NR) {
     regCount = 0;
     full = true;
   }
@@ -136,8 +135,15 @@ void divOperation() {
   printf("\tmovq\t$0, %crdx\n", PREFIX);
   printf("\tpopq\t%crsi\n", PREFIX);
   printf("\tpopq\t%crax\n", PREFIX);
-  printf("\tdivq\t%crsi\n", PREFIX);
+  printf("\tidivq\t%crsi\n", PREFIX);
   printf("\tpushq\t%crax\n", PREFIX);
+}
+
+void maintainVar2Text(char variable)
+{
+  int index = isInArray(variable);
+  printf("\tmovq\t%c%s, vars+%d(%crip)\n", PREFIX, var2reg[index].reg,
+         var2reg[index].variable * 8, PREFIX);
 }
 
 int ex(nodeType *p) {
@@ -155,21 +161,25 @@ int ex(nodeType *p) {
     operator1 = assignVariable(p->id.i + 'a');
     printf("\tmovq\t%c%s, %crbx\n", PREFIX, var2reg[operator1].reg, PREFIX);
     printf("\tpushq\t%crbx\n", PREFIX);
+
     break;
   case typeOpr:
     switch (p->opr.oper) {
     case WHILE:
-      storeLoopRegs();
+      storeDynamicRegs(loopRegs);
       printf("L%03d:\n", lbl1 = lbl++);
       ex(p->opr.op[0]);
       printf("\tL%03d\n", lbl2 = lbl++);
       ex(p->opr.op[1]);
-      restoreLoopRegs();
+      restoreDynamicRegs(loopRegs);
       printf("\tjmp\tL%03d\n", lbl1);
       printf("L%03d:\n", lbl2);
 
       break;
     case IF:
+      storeDynamicRegs(ifRegs); // Maintain if-regs, ensure that they have been declared
+                       // in the dynamic array (vars)
+      restoreDynamicRegs(ifRegs);
       ex(p->opr.op[0]);
       if (p->opr.nops > 2) {
         /* if else */
@@ -181,6 +191,8 @@ int ex(nodeType *p) {
         printf("L%03d:\n", lbl2);
       } else {
         /* if */
+        storeDynamicRegs(ifRegs);
+        restoreDynamicRegs(ifRegs);
         printf("\tL%03d\n", lbl1 = lbl++);
         ex(p->opr.op[1]);
         printf("L%03d:\n", lbl1);
@@ -200,6 +212,8 @@ int ex(nodeType *p) {
       ex(p->opr.op[1]);
       operator1 = assignVariable(p->opr.op[0]->id.i + 'a');
       printf("\tpopq\t%c%s\n", PREFIX, var2reg[operator1].reg);
+      maintainVar2Text(p->opr.op[0]->id.i + 'a');
+      // printf("Assign var: %c\n", p->opr.op[0]->id.i + 'a');
       break;
     case UMINUS:
       ex(p->opr.op[0]);
