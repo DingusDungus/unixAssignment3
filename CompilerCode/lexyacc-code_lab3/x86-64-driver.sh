@@ -1,23 +1,29 @@
 #!/bin/sh
 
-file=$1
+filepath=$1
+filename=$(basename $1 .calc)
 
-fileProperties=$(echo $file | tr "." "\n")
+./calc3i.exe < $filepath > $filename.s
 
-./calc3i.exe < $file > $fileProperties.s
-
-echo -e "
-.globl	vars
-	.align 32
-	.type	vars, @object
-	.size	vars, 2048
+echo "
+.data
+formatString:
+	.string	\"Number :%d\n\"
 vars:
 	.zero	2048
-	.section	.rodata
-.LC0:
-	.text
-	.globl	main
-	.type	main, @function
-    .zero 2048
+isInReg:
+	.zero	2048
+
+.text
+.global	main		
     
-main:" | cat - $fileProperties.s > temp && mv temp $fileProperties.s
+main:
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subq	\$16, %rsp" | cat - $filename.s > temp && mv temp $filename.s
+
+echo -e "	leave
+	ret\n" >> $filename.s
+
+gcc -c $filename.s 
+gcc $filename.o ./library_functions/lib/calc_lib.a -o $filename
