@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.7.6.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -46,10 +46,10 @@
    USER NAME SPACE" below.  */
 
 /* Identify Bison output, and Bison version.  */
-#define YYBISON 30706
+#define YYBISON 30802
 
 /* Bison version string.  */
-#define YYBISON_VERSION "3.7.6"
+#define YYBISON_VERSION "3.8.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -189,7 +189,9 @@ typedef union YYSTYPE YYSTYPE;
 
 extern YYSTYPE yylval;
 
+
 int yyparse (void);
+
 
 #endif /* !YY_YY_Y_TAB_H_INCLUDED  */
 /* Symbol kind.  */
@@ -389,12 +391,18 @@ typedef int yy_state_fast_t;
 # define YY_USE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
     _Pragma ("GCC diagnostic push")                                     \
     _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# endif
 # define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
@@ -610,7 +618,7 @@ static const yytype_int8 yytranslate[] =
 };
 
 #if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
        0,    43,    43,    47,    48,    52,    53,    54,    55,    56,
@@ -646,17 +654,6 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#ifdef YYPRINT
-/* YYTOKNUM[NUM] -- (External) token number corresponding to the
-   (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_int16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,    62,    60,   269,    43,    45,    42,
-      47,   270,   271,   272,    59,    61,    40,    41,   123,   125
-};
-#endif
-
 #define YYPACT_NINF (-17)
 
 #define yypact_value_is_default(Yyn) \
@@ -667,8 +664,8 @@ static const yytype_int16 yytoknum[] =
 #define yytable_value_is_error(Yyn) \
   0
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
      -17,     5,    56,   -17,   -17,   -16,    -6,    15,    65,    65,
@@ -680,9 +677,9 @@ static const yytype_int16 yypact[] =
       56,   -17,    10,    56,   -17
 };
 
-  /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
-     Performed when YYTABLE does not specify something else to do.  Zero
-     means the default is an error.  */
+/* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
+   Performed when YYTABLE does not specify something else to do.  Zero
+   means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
        4,     0,     2,     1,    15,    16,     0,     0,     0,     0,
@@ -694,21 +691,21 @@ static const yytype_int8 yydefact[] =
        0,     9,    10,     0,    11
 };
 
-  /* YYPGOTO[NTERM-NUM].  */
+/* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
      -17,   -17,   -17,   -14,   -17,    -7
 };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
+/* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
        0,     1,     2,    15,    27,    16
 };
 
-  /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule whose
-     number is the opposite.  If YYTABLE_NINF, syntax error.  */
+/* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
+   positive, shift that token.  If negative, reduce the rule whose
+   number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
       26,    21,    22,    23,    24,     3,    25,    37,    38,    17,
@@ -757,8 +754,8 @@ static const yytype_int8 yycheck[] =
       24
 };
 
-  /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
+/* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+   state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
        0,    31,    32,     0,     3,     4,     5,     6,     7,    18,
@@ -770,7 +767,7 @@ static const yytype_int8 yystos[] =
       27,    33,    33,     9,    33
 };
 
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
+/* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
        0,    30,    31,    32,    32,    33,    33,    33,    33,    33,
@@ -779,7 +776,7 @@ static const yytype_int8 yyr1[] =
       35,    35
 };
 
-  /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
+/* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     2,     0,     1,     2,     3,     4,     5,
@@ -797,6 +794,7 @@ enum { YYENOMEM = -2 };
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
 #define YYERROR         goto yyerrorlab
+#define YYNOMEM         goto yyexhaustedlab
 
 
 #define YYRECOVERING()  (!!yyerrstatus)
@@ -837,10 +835,7 @@ do {                                            \
     YYFPRINTF Args;                             \
 } while (0)
 
-/* This macro is provided for backward compatibility. */
-# ifndef YY_LOCATION_PRINT
-#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-# endif
+
 
 
 # define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
@@ -867,10 +862,6 @@ yy_symbol_value_print (FILE *yyo,
   YY_USE (yyoutput);
   if (!yyvaluep)
     return;
-# ifdef YYPRINT
-  if (yykind < YYNTOKENS)
-    YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
-# endif
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
@@ -1055,6 +1046,7 @@ yyparse (void)
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yychar = YYEMPTY; /* Cause a token to be read.  */
+
   goto yysetstate;
 
 
@@ -1080,7 +1072,7 @@ yysetstate:
 
   if (yyss + yystacksize - 1 <= yyssp)
 #if !defined yyoverflow && !defined YYSTACK_RELOCATE
-    goto yyexhaustedlab;
+    YYNOMEM;
 #else
     {
       /* Get the current used size of the three stacks, in elements.  */
@@ -1108,7 +1100,7 @@ yysetstate:
 # else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
+        YYNOMEM;
       yystacksize *= 2;
       if (YYMAXDEPTH < yystacksize)
         yystacksize = YYMAXDEPTH;
@@ -1119,7 +1111,7 @@ yysetstate:
           YY_CAST (union yyalloc *,
                    YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
-          goto yyexhaustedlab;
+          YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
@@ -1140,6 +1132,7 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
+
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1255,179 +1248,179 @@ yyreduce:
   case 2: /* program: function  */
 #line 43 "calc3.y"
                                 { exit(0); }
-#line 1259 "y.tab.c"
+#line 1252 "y.tab.c"
     break;
 
   case 3: /* function: function stmt  */
 #line 47 "calc3.y"
                                 { ex((yyvsp[0].nPtr)); freeNode((yyvsp[0].nPtr)); }
-#line 1265 "y.tab.c"
+#line 1258 "y.tab.c"
     break;
 
   case 5: /* stmt: ';'  */
 #line 52 "calc3.y"
                                          { (yyval.nPtr) = opr(';', 2, NULL, NULL); }
-#line 1271 "y.tab.c"
+#line 1264 "y.tab.c"
     break;
 
   case 6: /* stmt: expr ';'  */
 #line 53 "calc3.y"
                                          { (yyval.nPtr) = (yyvsp[-1].nPtr); }
-#line 1277 "y.tab.c"
+#line 1270 "y.tab.c"
     break;
 
   case 7: /* stmt: PRINT expr ';'  */
 #line 54 "calc3.y"
                                          { (yyval.nPtr) = opr(PRINT, 1, (yyvsp[-1].nPtr)); }
-#line 1283 "y.tab.c"
+#line 1276 "y.tab.c"
     break;
 
   case 8: /* stmt: VARIABLE '=' expr ';'  */
 #line 55 "calc3.y"
                                          { (yyval.nPtr) = opr('=', 2, id((yyvsp[-3].sIndex)), (yyvsp[-1].nPtr)); }
-#line 1289 "y.tab.c"
+#line 1282 "y.tab.c"
     break;
 
   case 9: /* stmt: WHILE '(' expr ')' stmt  */
 #line 56 "calc3.y"
                                          { (yyval.nPtr) = opr(WHILE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1295 "y.tab.c"
+#line 1288 "y.tab.c"
     break;
 
   case 10: /* stmt: IF '(' expr ')' stmt  */
 #line 57 "calc3.y"
                                          { (yyval.nPtr) = opr(IF, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1301 "y.tab.c"
+#line 1294 "y.tab.c"
     break;
 
   case 11: /* stmt: IF '(' expr ')' stmt ELSE stmt  */
 #line 58 "calc3.y"
                                          { (yyval.nPtr) = opr(IF, 3, (yyvsp[-4].nPtr), (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1307 "y.tab.c"
+#line 1300 "y.tab.c"
     break;
 
   case 12: /* stmt: '{' stmt_list '}'  */
 #line 59 "calc3.y"
                                          { (yyval.nPtr) = (yyvsp[-1].nPtr); }
-#line 1313 "y.tab.c"
+#line 1306 "y.tab.c"
     break;
 
   case 13: /* stmt_list: stmt  */
 #line 63 "calc3.y"
                                 { (yyval.nPtr) = (yyvsp[0].nPtr); }
-#line 1319 "y.tab.c"
+#line 1312 "y.tab.c"
     break;
 
   case 14: /* stmt_list: stmt_list stmt  */
 #line 64 "calc3.y"
                                 { (yyval.nPtr) = opr(';', 2, (yyvsp[-1].nPtr), (yyvsp[0].nPtr)); }
-#line 1325 "y.tab.c"
+#line 1318 "y.tab.c"
     break;
 
   case 15: /* expr: INTEGER  */
 #line 68 "calc3.y"
                                 { (yyval.nPtr) = con((yyvsp[0].iValue)); }
-#line 1331 "y.tab.c"
+#line 1324 "y.tab.c"
     break;
 
   case 16: /* expr: VARIABLE  */
 #line 69 "calc3.y"
                                 { (yyval.nPtr) = id((yyvsp[0].sIndex)); }
-#line 1337 "y.tab.c"
+#line 1330 "y.tab.c"
     break;
 
   case 17: /* expr: '-' expr  */
 #line 70 "calc3.y"
                                 { (yyval.nPtr) = opr(UMINUS, 1, (yyvsp[0].nPtr)); }
-#line 1343 "y.tab.c"
+#line 1336 "y.tab.c"
     break;
 
   case 18: /* expr: FACT expr  */
 #line 71 "calc3.y"
                                 { (yyval.nPtr) = opr(FACT, 1, (yyvsp[0].nPtr)); }
-#line 1349 "y.tab.c"
+#line 1342 "y.tab.c"
     break;
 
   case 19: /* expr: LNTWO expr  */
 #line 72 "calc3.y"
                                 { (yyval.nPtr) = opr(LNTWO, 1, (yyvsp[0].nPtr)); }
-#line 1355 "y.tab.c"
+#line 1348 "y.tab.c"
     break;
 
   case 20: /* expr: expr GCD expr  */
 #line 73 "calc3.y"
                                 { (yyval.nPtr) = opr(GCD, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1361 "y.tab.c"
+#line 1354 "y.tab.c"
     break;
 
   case 21: /* expr: expr '+' expr  */
 #line 74 "calc3.y"
                                 { (yyval.nPtr) = opr('+', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1367 "y.tab.c"
+#line 1360 "y.tab.c"
     break;
 
   case 22: /* expr: expr '-' expr  */
 #line 75 "calc3.y"
                                 { (yyval.nPtr) = opr('-', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1373 "y.tab.c"
+#line 1366 "y.tab.c"
     break;
 
   case 23: /* expr: expr '*' expr  */
 #line 76 "calc3.y"
                                 { (yyval.nPtr) = opr('*', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1379 "y.tab.c"
+#line 1372 "y.tab.c"
     break;
 
   case 24: /* expr: expr '/' expr  */
 #line 77 "calc3.y"
                                 { (yyval.nPtr) = opr('/', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1385 "y.tab.c"
+#line 1378 "y.tab.c"
     break;
 
   case 25: /* expr: expr '<' expr  */
 #line 78 "calc3.y"
                                 { (yyval.nPtr) = opr('<', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1391 "y.tab.c"
+#line 1384 "y.tab.c"
     break;
 
   case 26: /* expr: expr '>' expr  */
 #line 79 "calc3.y"
                                 { (yyval.nPtr) = opr('>', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1397 "y.tab.c"
+#line 1390 "y.tab.c"
     break;
 
   case 27: /* expr: expr GE expr  */
 #line 80 "calc3.y"
                                 { (yyval.nPtr) = opr(GE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1403 "y.tab.c"
+#line 1396 "y.tab.c"
     break;
 
   case 28: /* expr: expr LE expr  */
 #line 81 "calc3.y"
                                 { (yyval.nPtr) = opr(LE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1409 "y.tab.c"
+#line 1402 "y.tab.c"
     break;
 
   case 29: /* expr: expr NE expr  */
 #line 82 "calc3.y"
                                 { (yyval.nPtr) = opr(NE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1415 "y.tab.c"
+#line 1408 "y.tab.c"
     break;
 
   case 30: /* expr: expr EQ expr  */
 #line 83 "calc3.y"
                                 { (yyval.nPtr) = opr(EQ, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
-#line 1421 "y.tab.c"
+#line 1414 "y.tab.c"
     break;
 
   case 31: /* expr: '(' expr ')'  */
 #line 84 "calc3.y"
                                 { (yyval.nPtr) = (yyvsp[-1].nPtr); }
-#line 1427 "y.tab.c"
+#line 1420 "y.tab.c"
     break;
 
 
-#line 1431 "y.tab.c"
+#line 1424 "y.tab.c"
 
       default: break;
     }
@@ -1509,6 +1502,7 @@ yyerrorlab:
      label yyerrorlab therefore never appears in user code.  */
   if (0)
     YYERROR;
+  ++yynerrs;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -1569,7 +1563,7 @@ yyerrlab1:
 `-------------------------------------*/
 yyacceptlab:
   yyresult = 0;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
 /*-----------------------------------.
@@ -1577,24 +1571,22 @@ yyacceptlab:
 `-----------------------------------*/
 yyabortlab:
   yyresult = 1;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
-#if !defined yyoverflow
-/*-------------------------------------------------.
-| yyexhaustedlab -- memory exhaustion comes here.  |
-`-------------------------------------------------*/
+/*-----------------------------------------------------------.
+| yyexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
+`-----------------------------------------------------------*/
 yyexhaustedlab:
   yyerror (YY_("memory exhausted"));
   yyresult = 2;
-  goto yyreturn;
-#endif
+  goto yyreturnlab;
 
 
-/*-------------------------------------------------------.
-| yyreturn -- parsing is finished, clean up and return.  |
-`-------------------------------------------------------*/
-yyreturn:
+/*----------------------------------------------------------.
+| yyreturnlab -- parsing is finished, clean up and return.  |
+`----------------------------------------------------------*/
+yyreturnlab:
   if (yychar != YYEMPTY)
     {
       /* Make sure we have latest lookahead translation.  See comments at
