@@ -4,9 +4,9 @@ filepath=$1
 filename=$(basename $1 .calc)
 path=$(dirname $1)
 
-./calc3i.exe < $filepath > $filename.s
+rm -f $path/$filename.s $path/$filename $path/$filename.o
 
-rm -f $filenarmme.s $filename
+./calc3i.exe < $filepath > $path/$filename.s
 
 echo "
 .data
@@ -23,11 +23,10 @@ isInReg:
 main:
 	pushq	%rbp
 	movq	%rsp, %rbp
-	subq	\$16, %rsp" | cat - $filename.s > temp && mv temp $filename.s
+	subq	\$16, %rsp" | cat - $path/$filename.s > temp && mv temp $path/$filename.s
 
 echo -e "	leave
-	ret\n" >> $filename.s
+	ret\n" >> $path/$filename.s
 
-gcc -c $filename.s 
-gcc -no-pie $filename.o ./library_functions/lib/calc_lib.a -o $path/$filename
-rm $filename.o
+gcc -c $path/$filename.s -o $path/$filename.o
+gcc -no-pie $path/$filename.o ./library_functions/lib/calc_lib.a -o $path/$filename
